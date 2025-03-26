@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quebra-Cabeça Deslizante</title>
+    <!-- CSS: Estilo para o layout e aparência -->
+    <style>
+        /* Estilo geral da página */
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Estilo para o tabuleiro do jogo */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 5px;
+            margin: auto;
+            width: 420px; /* Largura total do tabuleiro */
+        }
+
+        /* Estilo para cada peça */
+        .tile {
+            width: 100px; /* Largura da peça */
+            height: 100px; /* Altura da peça */
+            background-color: #240cd7; /* Cor das peças */
+            color: white; /* Cor do texto */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px; /* Tamanho da fonte */
+            font-weight: bold;
+            cursor: pointer; /* Cursor muda para clique */
+            border-radius: 5px; /* Bordas arredondadas */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Sombra das peças */
+        }
+
+        /* Estilo para a peça vazia */
+        .empty {
+            background-color: white; /* Cor da peça vazia */
+            cursor: default; /* Desativa o cursor */
+            box-shadow: none; /* Remove a sombra */
+        }
+    </style>
+</head>
+<body>
+    <h1>Quebra-Cabeça Deslizante 15</h1>
+    <p>Ordene os números de 1 a 15 movendo as peças!</p>
+    
+    <!-- HTML: Estrutura para o tabuleiro -->
+    <div class="board" id="board"></div>
+    
+    <!-- JavaScript: Lógica do jogo -->
+    <script>
+        /* Seleção do tabuleiro */
+        const board = document.getElementById("board");
+        let tiles = []; // Array para armazenar as peças
+
+        /* Inicialização do jogo */
+        function initGame() {
+            let numbers = Array.from({ length: 15 }, (_, i) => i + 1); // Números de 1 a 15
+            numbers.push(null); // Adiciona o espaço vazio
+            numbers = shuffle(numbers); // Embaralha os números
+
+            board.innerHTML = ""; // Limpa o tabuleiro
+            tiles = []; // Reseta o array de peças
+
+            /* Cria cada peça do jogo */
+            numbers.forEach((num, index) => {
+                const tile = document.createElement("div"); // Criação do elemento div
+                tile.classList.add("tile"); // Adiciona a classe "tile"
+                if (num === null) {
+                    tile.classList.add("empty"); // Adiciona a classe "empty" para peça vazia
+                } else {
+                    tile.textContent = num; // Define o número como texto da peça
+                    tile.addEventListener("click", () => moveTile(index)); // Adiciona o evento de clique
+                }
+                tiles.push(tile); // Adiciona a peça ao array
+                board.appendChild(tile); // Adiciona a peça ao tabuleiro
+            });
+        }
+
+        /* Função para embaralhar os números */
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Troca os elementos
+            }
+            return array;
+        }
+
+        /* Movimentação das peças */
+        function moveTile(index) {
+            const emptyIndex = tiles.findIndex(tile => tile.classList.contains("empty")); // Encontra o espaço vazio
+            const emptyRow = Math.floor(emptyIndex / 4); // Linha do espaço vazio
+            const emptyCol = emptyIndex % 4; // Coluna do espaço vazio
+            const tileRow = Math.floor(index / 4); // Linha da peça clicada
+            const tileCol = index % 4; // Coluna da peça clicada
+
+            /* Verifica se a peça clicada está adjacente ao espaço vazio */
+            const isAdjacent = 
+                (tileRow === emptyRow && Math.abs(tileCol - emptyCol) === 1) || 
+                (tileCol === emptyCol && Math.abs(tileRow - emptyRow) === 1);
+
+            /* Move a peça se estiver adjacente */
+            if (isAdjacent) {
+                tiles[emptyIndex].textContent = tiles[index].textContent; // Move o número para o espaço vazio
+                tiles[emptyIndex].classList.remove("empty"); // Remove a classe "empty" do espaço vazio
+                tiles[index].textContent = ""; // Remove o número da peça clicada
+                tiles[index].classList.add("empty"); // Adiciona a classe "empty" à peça clicada
+            }
+        }
+
+        /* Inicializa o jogo ao carregar a página */
+        initGame();
+    </script>
+</body>
+</html>
