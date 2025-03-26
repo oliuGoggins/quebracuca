@@ -1,124 +1,108 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quebra-Cabeça Deslizante</title>
-    <!-- CSS: Estilo para o layout e aparência -->
+    <title>Quebra-Cuca</title>
+    
+    <!-- Estilos CSS para o layout e aparência do jogo -->
     <style>
-        /* Estilo geral da página */
         body {
-            text-align: center;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
         }
-
-        /* Estilo para o tabuleiro do jogo */
-        .board {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(4, 100px);
-            grid-template-rows: repeat(4, 100px);
+            grid-template-columns: repeat(4, 80px);
             gap: 5px;
-            margin: auto;
-            width: 420px; /* Largura total do tabuleiro */
+            padding: 10px;
+            background: #ddd;
+            border-radius: 10px;
         }
-
-        /* Estilo para cada peça */
         .tile {
-            width: 100px; /* Largura da peça */
-            height: 100px; /* Altura da peça */
-            background-color: #240cd7; /* Cor das peças */
-            color: white; /* Cor do texto */
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px; /* Tamanho da fonte */
+            font-size: 24px;
             font-weight: bold;
-            cursor: pointer; /* Cursor muda para clique */
-            border-radius: 5px; /* Bordas arredondadas */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Sombra das peças */
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
-        /* Estilo para a peça vazia */
         .empty {
-            background-color: white; /* Cor da peça vazia */
-            cursor: default; /* Desativa o cursor */
-            box-shadow: none; /* Remove a sombra */
+            background: white;
+            cursor: default;
         }
     </style>
 </head>
 <body>
-    <h1>Quebra-Cabeça Deslizante 15</h1>
-    <p>Ordene os números de 1 a 15 movendo as peças!</p>
-    
-    <!-- HTML: Estrutura para o tabuleiro -->
-    <div class="board" id="board"></div>
-    
-    <!-- JavaScript: Lógica do jogo -->
+    <h1>Quebra-Cuca</h1>
+    <div class="grid" id="puzzle"></div>
+
+    <!-- Código JavaScript para a lógica do jogo -->
     <script>
-        /* Seleção do tabuleiro */
-        const board = document.getElementById("board");
-        let tiles = []; // Array para armazenar as peças
+        const puzzle = document.getElementById("puzzle");
+        let tiles = [...Array(15).keys(), ""];
+        tiles = shuffleArray(tiles);
 
-        /* Inicialização do jogo */
-        function initGame() {
-            let numbers = Array.from({ length: 15 }, (_, i) => i + 1); // Números de 1 a 15
-            numbers.push(null); // Adiciona o espaço vazio
-            numbers = shuffle(numbers); // Embaralha os números
+        // Função para embaralhar as peças de forma que o jogo seja solucionável
+        function shuffleArray(array) {
+            let shuffled;
+            do {
+                shuffled = [...array].sort(() => Math.random() - 0.5);
+            } while (!isSolvable(shuffled));
+            return shuffled;
+        }
 
-            board.innerHTML = ""; // Limpa o tabuleiro
-            tiles = []; // Reseta o array de peças
-
-            /* Cria cada peça do jogo */
-            numbers.forEach((num, index) => {
-                const tile = document.createElement("div"); // Criação do elemento div
-                tile.classList.add("tile"); // Adiciona a classe "tile"
-                if (num === null) {
-                    tile.classList.add("empty"); // Adiciona a classe "empty" para peça vazia
-                } else {
-                    tile.textContent = num; // Define o número como texto da peça
-                    tile.addEventListener("click", () => moveTile(index)); // Adiciona o evento de clique
+        // Verifica se a configuração do jogo pode ser resolvida
+        function isSolvable(arr) {
+            let invCount = 0;
+            for (let i = 0; i < arr.length - 1; i++) {
+                for (let j = i + 1; j < arr.length; j++) {
+                    if (arr[i] && arr[j] && arr[i] > arr[j]) {
+                        invCount++;
+                    }
                 }
-                tiles.push(tile); // Adiciona a peça ao array
-                board.appendChild(tile); // Adiciona a peça ao tabuleiro
+            }
+            return invCount % 2 === 0;
+        }
+
+        // Renderiza o tabuleiro com os números e o espaço vazio
+        function render() {
+            puzzle.innerHTML = "";
+            tiles.forEach((tile, index) => {
+                const div = document.createElement("div");
+                div.className = "tile";
+                if (tile === "") div.classList.add("empty");
+                div.textContent = tile;
+                div.onclick = () => moveTile(index);
+                puzzle.appendChild(div);
             });
         }
 
-        /* Função para embaralhar os números */
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]]; // Troca os elementos
-            }
-            return array;
-        }
-
-        /* Movimentação das peças */
+        // Função para mover uma peça para o espaço vazio
         function moveTile(index) {
-            const emptyIndex = tiles.findIndex(tile => tile.classList.contains("empty")); // Encontra o espaço vazio
-            const emptyRow = Math.floor(emptyIndex / 4); // Linha do espaço vazio
-            const emptyCol = emptyIndex % 4; // Coluna do espaço vazio
-            const tileRow = Math.floor(index / 4); // Linha da peça clicada
-            const tileCol = index % 4; // Coluna da peça clicada
-
-            /* Verifica se a peça clicada está adjacente ao espaço vazio */
-            const isAdjacent = 
-                (tileRow === emptyRow && Math.abs(tileCol - emptyCol) === 1) || 
-                (tileCol === emptyCol && Math.abs(tileRow - emptyRow) === 1);
-
-            /* Move a peça se estiver adjacente */
-            if (isAdjacent) {
-                tiles[emptyIndex].textContent = tiles[index].textContent; // Move o número para o espaço vazio
-                tiles[emptyIndex].classList.remove("empty"); // Remove a classe "empty" do espaço vazio
-                tiles[index].textContent = ""; // Remove o número da peça clicada
-                tiles[index].classList.add("empty"); // Adiciona a classe "empty" à peça clicada
+            const emptyIndex = tiles.indexOf("");
+            const validMoves = [
+                emptyIndex - 1, emptyIndex + 1,
+                emptyIndex - 4, emptyIndex + 4
+            ];
+            if (validMoves.includes(index)) {
+                [tiles[emptyIndex], tiles[index]] = [tiles[index], tiles[emptyIndex]];
+                render();
             }
         }
 
-        /* Inicializa o jogo ao carregar a página */
-        initGame();
+        // Inicializa o jogo
+        render();
     </script>
 </body>
 </html>
